@@ -23,24 +23,40 @@
     </div>
 
     <script>
-      window.fbAsyncInit = function() {
-        FB.init({
-          appId      : '4048240838642736',
-          cookie     : true,
-          xfbml      : true,
-          version    : 'v20.0'
-        });
-          
-        FB.AppEvents.logPageView();   
-      };
+          window.fbAsyncInit = function() {
+            FB.init({
+              appId      : '4048240838642736',
+              cookie     : true,
+              xfbml      : true,
+              version    : 'v20.0'
+            });
+              
+            FB.AppEvents.logPageView();   
+          };
+        
+          // 🔥 核心修正：在 SDK 加载前，强行在内存中拦截并修正 response_type 为 code
+          (function(d, s, id){
+             var js, fjs = d.getElementsByTagName(s)[0];
+             if (d.getElementById(id)) {return;}
+             js = d.createElement(s); js.id = id;
+             js.src = "https://connect.facebook.net/en_US/sdk.js";
+             
+             // 强制重写 Meta 的全局登录参数配置
+             window.fbAsyncInit = (function(oldInit) {
+               return function() {
+                 if (oldInit) oldInit();
+                 // 锁定底层 OAuth 路由机制，封死默认的 token 模式
+                 FB.provide && FB.provide('Login', {
+                   getAuthUrl: function(a) {
+                     a.response_type = 'code';
+                     return this.getAuthUrl.apply(this, arguments);
+                   }
+                 });
+               };
+             })(window.fbAsyncInit);
     
-      (function(d, s, id){
-         var js, fjs = d.getElementsByTagName(s)[0];
-         if (d.getElementById(id)) {return;}
-         js = d.createElement(s); js.id = id;
-         js.src = "https://connect.facebook.net/en_US/sdk.js";
-         fjs.parentNode.insertBefore(js, fjs);
-       }(document, 'script', 'facebook-jssdk'));
+             fjs.parentNode.insertBefore(js, fjs);
+           }(document, 'script', 'facebook-jssdk'));
     </script>
 
 </body>
