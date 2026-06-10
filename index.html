@@ -3,60 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <title>WhatsApp 官方共存安全扫码通道</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 100px; background-color: #f7f9fa; }
+        .wa-btn {
+            background-color: #1877F2; color: white; border: none; 
+            padding: 12px 28px; font-size: 16px; font-weight: bold; 
+            border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+        .wa-btn:hover { background-color: #166fe5; }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; text-align: center; padding-top: 100px;">
+<body>
 
     <h2>🛡️ WhatsApp Cloud API 官方共存接入</h2>
-    <p style="color: #666;">请点击下方蓝色官方按钮，登录并扫描弹出的 QR 二维码完成安全绑定。</p>
-    <br><br>
+    <p style="color: #666; max-width: 500px; margin: 0 auto 30px auto;">
+        请点击下方蓝色官方按钮。系统将通过 Meta 独立安全沙箱弹出登录窗口，请扫描生成的 QR 二维码完成设备绑定。
+    </p>
+
+    <button class="wa-btn" onclick="launchWhatsAppSignup()">Continue with Facebook</button>
 
     <div id="fb-root"></div>
-    <div class="fb-login-button" 
-         data-width="" 
-         data-size="large" 
-         data-button-type="continue_with" 
-         data-layout="default" 
-         data-auto-logout-link="false" 
-         data-use-continue-as="true"
-         data-config-id="3158771517648895"
-         data-response-type="code">
-    </div>
-
-    <script>
-          window.fbAsyncInit = function() {
-            FB.init({
-              appId      : '4048240838642736',
-              cookie     : true,
-              xfbml      : true,
-              version    : 'v20.0'
-            });
-              
-            FB.AppEvents.logPageView();   
-          };
-        
-          // 🔥 核心修正：在 SDK 加载前，强行在内存中拦截并修正 response_type 为 code
-          (function(d, s, id){
-             var js, fjs = d.getElementsByTagName(s)[0];
-             if (d.getElementById(id)) {return;}
-             js = d.createElement(s); js.id = id;
-             js.src = "https://connect.facebook.net/en_US/sdk.js";
-             
-             // 强制重写 Meta 的全局登录参数配置
-             window.fbAsyncInit = (function(oldInit) {
-               return function() {
-                 if (oldInit) oldInit();
-                 // 锁定底层 OAuth 路由机制，封死默认的 token 模式
-                 FB.provide && FB.provide('Login', {
-                   getAuthUrl: function(a) {
-                     a.response_type = 'code';
-                     return this.getAuthUrl.apply(this, arguments);
-                   }
-                 });
-               };
-             })(window.fbAsyncInit);
     
-             fjs.parentNode.insertBefore(js, fjs);
-           }(document, 'script', 'facebook-jssdk'));
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '4048240838642736', // 你的真实 App ID
+          cookie     : true,
+          xfbml      : true,
+          version    : 'v20.0'
+        });
+      };
+    
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "https://connect.facebook.net/en_US/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
+
+      // 🔥 3. 核心修复：手动函数触发，并强制覆盖底层 response_type
+      function launchWhatsAppSignup() {
+        FB.login(function(response) {
+          if (response.authResponse) {
+            console.log('授权成功，已取得 Code:', response.authResponse.code);
+            alert('绑定流程已发起！请在弹出的 Meta 窗口中完成后续操作。');
+          } else {
+            console.log('用户取消了登录或未完全授权。');
+          }
+        }, {
+          config_id: '3158771517648895', // 👈 填入你的 Configuration ID
+          response_type: 'code',                                // 👈 强锁 code 模式
+          override_default_response_type: true                  // 🔥 逼迫 Meta 关掉旧版 token 校验的关键参数
+        });
+      }
     </script>
 
 </body>
