@@ -17,11 +17,30 @@
          data-button-type="continue_with" 
          data-layout="default" 
          data-auto-logout-link="false" 
-         data-use-continue-as="true">
+         data-use-continue-as="true"
+         data-config-id="3158771517648895"
+         data-response-type="code">
     </div>
 
     <script>
-      // 【在这里直接覆盖粘贴你从 Meta Quickstart 页面拿到的那段带 Config ID 的 <script> 代码】
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '4048240838642736',
+          cookie     : true,
+          xfbml      : true,
+          version    : 'v20.0'
+        });
+          
+        FB.AppEvents.logPageView();   
+      };
+    
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "https://connect.facebook.net/en_US/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
     </script>
 
 </body>
